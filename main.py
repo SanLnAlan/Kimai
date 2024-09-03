@@ -4,17 +4,19 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-from utils import set_dataframe, group_by_customer, get_customers_available, get_years_available
+from Dataframe import Dataframe, filter_by_date, filter_by_customer
 from utils_html import main_layout
+from datetime import *
+from datetime import date
+
 
 dir = "C:/Users/AlanSandoval/Downloads/kimai_complete.csv"
-include_optimen_hours = True # modify
-data = set_dataframe(dir, include_optimen_hours, data_prepared=True)
+data = Dataframe(dir, data_prepared=True)
 
 app = dash.Dash(__name__)
 
-group_customer = group_by_customer(data)
-fig = px.pie(group_customer, values='Duration', names=group_customer.index, title='Historic')
+# group_customer = data.group_by_customer()
+# fig = px.pie(group_customer, values='Duration', names=group_customer.index, title='Historic')
 
 # app.layout = main_layout(fig)
 app.layout = html.Div(
@@ -29,18 +31,25 @@ app.layout = html.Div(
                     'marginBottom': '20px'
                 }
             ),
-            # html.Div(["Year: ", dcc.Input(id="input-year", value="2024",
-            html.Div(["Year: ", dcc.Dropdown(get_years_available(data), 'All', multi=False,id="input-year"),],
+            html.Div(
+                [
+                    "Date: ",
+                    dcc.DatePickerRange(
+                        start_date=datetime.date(datetime.now().replace(day=1)),
+                        end_date_placeholder_text='Select a date!',
+                        id="input-date"
+                    ),
+                ],
                                         #    type='number', style={'height':'50px',
                                                                 #  'font-size':35}),],
-                                            style={'font-size': 40}
+                style={'font-size': 40}
             ),
             html.Div(["Month: ", dcc.Input(id="input-month", value="January",
                                            type='text', style={'height':'50px',
                                                                  'font-size':35}),],
                                             style={'font-size': 40}
             ),
-            html.Div(["Customer: ", dcc.Dropdown(get_customers_available(data), 'All', multi=True,id="input-customer"),],
+            html.Div(["Customer: ", dcc.Dropdown(data.get_customers_available(), '', multi=True,id="input-customer"),],
                                             style={'font-size': 40}
             ),
             html.Br(),
@@ -52,11 +61,13 @@ app.layout = html.Div(
 
 
 @app.callback(Output(component_id='bar-plot', component_property='figure'),
-              Input(component_id="input-year", component_property='value'),
-              Input(component_id="input-month", component_property='value'),
+            #   Input(component_id="input-year", component_property='value'),
+              Input("input-date", "start_date"),
+              Input("input-date", "end_date"),
+            #   Input(component_id="input-month", component_property='value'),
               Input(component_id="input-customer", component_property='value'))
 
-def get_graph(year, month, customer):
+def get_sunburst(start_date,end_date, customer):
     # set_values = get_set_posible_values()
     # df_year = data[(data['Date'].dt.year == year) & (data['Date'].dt.month_name() == month)]
     # df_year = data[data['Date'].dt.year == year]
@@ -65,11 +76,18 @@ def get_graph(year, month, customer):
     # fig1 = px.pie(df_year, values='Duration', names='Customer', title= f"{month} {year}", hole=.3)
     # fig1.update_layout()
     # return fig1
-    # if year != "":
-        # data = data[data['Date'].dt.year == year]
+    data_output = data.df
 
-    fig = px.sunburst(data, path=['Customer', 'Project', 'Activity'], values='Duration')
-    return fig
+    data_output = filter_by_date(data_output, start_date, end_date)
+
+    if customer not in ["", []]:
+        data_output = filter_by_customer(data_output, customer)
+        # this should be different when len(customer) > 1 ->
+        return px.sunburst(data_output, path=['Project', 'Activity'], values='Duration', title=f'{start_date} - {end_date}')
+
+    return px.sunburst(data_output, path=['Customer', 'Project', 'Activity'], values='Duration', title=f'{start_date} - {end_date}')
+    # fig = px.sunburst(data_output, path=['Customer', 'Project', 'Activity'], values='Duration', title=str(years))
+    # return fig
 
 
 if __name__ == '__main__':
