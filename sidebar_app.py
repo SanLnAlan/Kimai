@@ -19,6 +19,7 @@ documentation: https://dash.plot.ly/urls
 import dash
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, dcc, html
+from utils import plot_content
 
 app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -89,8 +90,8 @@ sidebar = html.Div(
             dbc.Nav(
                 [
                     dbc.NavLink("Home", href="/", active="exact"),
-                    dbc.NavLink("Page 1", href="/page-1", active="exact"),
-                    dbc.NavLink("Page 2", href="/page-2", active="exact"),
+                    dbc.NavLink("Prediction Model", href="/page-1", active="exact"),
+                    dbc.NavLink("Reports", href="/page-2", active="exact"),
                 ],
                 vertical=True,
                 pills=True,
@@ -106,14 +107,16 @@ content = html.Div(id="page-content")
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
 
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return html.P("This is the content of the home page!")
-    elif pathname == "/page-1":
-        return html.P("This is the content of page 1. Yay!")
-    elif pathname == "/page-2":
-        return html.P("Oh cool, this is page 2!")
+        return plot_content()
+        # return html.P("This is the content of the home page!")
+    # elif pathname == "/page-1":
+    #     return html.P("This is the content of page 1. Yay!")
+    # elif pathname == "/page-2":
+    #     return html.P("Oh cool, this is page 2!")
     # If the user tries to reach a different page, return a 404 message
     return html.Div(
         [
@@ -124,7 +127,7 @@ def render_page_content(pathname):
         className="p-3 bg-light rounded-3",
     )
 
-
+#Show or collapse the sidebar
 @app.callback(
     Output("sidebar", "className"),
     [Input("sidebar-toggle", "n_clicks")],
@@ -134,7 +137,6 @@ def toggle_classname(n, classname):
     if n and classname == "":
         return "collapsed"
     return ""
-
 
 @app.callback(
     Output("collapse", "is_open"),

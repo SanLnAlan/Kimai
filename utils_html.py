@@ -3,7 +3,7 @@ from dash import dcc
 from dash import html
 
 def main_layout(fig):
-    container = html.Div(
+    return html.Div(
         style={'padding': '20px', 'backgroundColor': '#f9f9f9'},
         children=[
             html.H1(
@@ -15,7 +15,14 @@ def main_layout(fig):
                     'marginBottom': '20px'
                 }
             ),
-            dcc.Graph(figure=fig)
+            html.Div(["Input: ", dcc.Input(id="input-customer", value="ALASKA (ASA)",
+                                           type='number', style={'height':'50px',
+                                                                 'font-size':35}),],
+                                            style={'font-size': 40}
+            ),
+            html.Br(),
+            html.Br(),
+            html.Div(dcc.Graph(id='bar-plot')),
+            # dcc.Graph(figure=fig)
         ]
     )
-    return container

@@ -112,18 +112,18 @@ def update_output_container(selected_statistics, input_year):
         ])
     
     # Yearly Statistic Report Plots 
-     # Check for Yearly Statistics.
+    # Check for Yearly Statistics.
     elif (input_year and selected_statistics=='Yearly Statistics'):
         yearly_data = data[data['Year'] == input_year]
 
 
-# # Plot 1 :Yearly Automobile sales using line chart for the whole period.
-#         # grouping data for plotting.
-#         # Hint:Use the columns Year and Automobile_Sales.
+        # # Plot 1 :Yearly Automobile sales using line chart for the whole period.
+        #         # grouping data for plotting.
+        #         # Hint:Use the columns Year and Automobile_Sales.
         yas= data.groupby('Year')['Automobile_Sales'].mean().reset_index()
         Y_chart1 = dcc.Graph(figure=px.line(yas,x="Year",y="Automobile_Sales", title="Yearly Automobile sales"))
             
-# Plot 2 :Total Monthly Automobile sales using line chart.
+        # Plot 2 :Total Monthly Automobile sales using line chart.
         # grouping data for plotting.
         # Hint:Use the columns Month and Automobile_Sales.
         # yearly_data['Month'] = pd.Categorical(yearly_data['Month'], categories=month_order, ordered=True)
@@ -134,14 +134,13 @@ def update_output_container(selected_statistics, input_year):
             y='Automobile_Sales',
             title='Total Monthly Automobile Sales'))
 
-# Plot bar chart for average number of vehicles sold during the given year
-
+        # Plot bar chart for average number of vehicles sold during the given year
          # grouping data for plotting.
          # Hint:Use the columns Year and Automobile_Sales
         avr_vdata = yearly_data.groupby("Vehicle_Type")["Automobile_Sales"].mean().reset_index()
         Y_chart3  =  dcc.Graph(figure=px.bar(avr_vdata,x="Vehicle_Type", y="Automobile_Sales",title='Average Vehicles Sold by Vehicle Type in the year {}'.format(input_year)))
 
-# Plot 4 Total Advertisement Expenditure for each vehicle using pie chart
+          # Plot 4 Total Advertisement Expenditure for each vehicle using pie chart
           # grouping data for plotting.
           # Hint:Use the columns Vehicle_Type and Advertising_Expenditure
         exp_data=yearly_data.groupby('Vehicle_Type')['Advertising_Expenditure'].sum().reset_index()
@@ -154,11 +153,6 @@ def update_output_container(selected_statistics, input_year):
             html.Div(className='chart-item', children=[html.Div(children=Y_chart1),html.Div(children=Y_chart2)],style={'display': 'flex'}),
             html.Div(className='chart-item', children=[html.Div(children=Y_chart3),html.Div(children=Y_chart4)],style={'display': 'flex'})
             ])
-
    
-
-    
-
-
 if __name__ == '__main__':
     app.run(debug=True)

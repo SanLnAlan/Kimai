@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 class Dataframe():
     def __init__(self, dir, data_prepared=False):
@@ -10,10 +11,16 @@ class Dataframe():
 
     def _prepare_dataframe(self):
         if not self.data_prepared:
-            self.df = self.df.iloc[:, [0, 3, 5, 6, 7, 8, 9]]
+            self.df = self.df.iloc[:, [0, 3, 4, 6, 7, 8, 9]]
             self.df = self.add_duration(self.df)
         self.df = self.df.astype({'Date': 'datetime64[ns]'})
         self.df = self.add_month_column(self.df)
+        self.df = self.add_ticket_based_on_description(self.df)
+
+    def add_ticket_based_on_description(self, df, pattern=r'(DBS-\d+|ASATB-\d+|LHS-\d+|MIGRACION|FUTAGI-\d+)'):
+        self.df["Ticket"] = self.df["Description"].str.extract(pattern, flags=re.IGNORECASE, expand=False)
+        self.df['Ticket'].fillna("Not identified", inplace=True)
+        return df
 
     def add_duration(self, df):
         df["Duration_minutes"] = np.where(df["Duration"].str[-2:] == '30', 0.5, 0.0)
@@ -38,6 +45,10 @@ class Dataframe():
 
     def get_customers_available(self):
         return self.df["Customer"].unique()
+    
+    def get_users_available(self):
+        # print(self.df.dtypes)
+        return self.df["User"].unique()
 
     def get_years_available(self):
         return self.df["Date"].dt.year.unique()
@@ -60,4 +71,11 @@ def filter_by_customer(df, customers):
     for customer in customers:
         df_customer = df[df['Customer'] == customer]
         df_list.append(df_customer)
+    return pd.concat(df_list)
+
+def filter_by_user(df, users):
+    df_list = []
+    for user in users:
+        df_user = df[df['User'] == user]
+        df_list.append(df_user)
     return pd.concat(df_list)

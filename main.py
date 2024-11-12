@@ -4,21 +4,15 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
-from Dataframe import Dataframe, filter_by_date, filter_by_customer
-from utils_html import main_layout
+from Dataframe import Dataframe, filter_by_date, filter_by_customer, filter_by_user
 from datetime import *
-from datetime import date
 
 
-dir = "C:/Users/AlanSandoval/Downloads/kimai_complete.csv"
-data = Dataframe(dir, data_prepared=True)
+dir = "C:/Users/AlanSandoval/Downloads/kimai_test.csv"
+data = Dataframe(dir, data_prepared=False)
 
 app = dash.Dash(__name__)
 
-# group_customer = data.group_by_customer()
-# fig = px.pie(group_customer, values='Duration', names=group_customer.index, title='Historic')
-
-# app.layout = main_layout(fig)
 app.layout = html.Div(
         style={'padding': '20px', 'backgroundColor': '#f9f9f9'},
         children=[
@@ -44,9 +38,13 @@ app.layout = html.Div(
                                                                 #  'font-size':35}),],
                 style={'font-size': 40}
             ),
-            html.Div(["Month: ", dcc.Input(id="input-month", value="January",
-                                           type='text', style={'height':'50px',
-                                                                 'font-size':35}),],
+            
+            # html.Div(["Month: ", dcc.Input(id="input-month", value="January",
+            #                                type='text', style={'height':'50px',
+            #                                                      'font-size':35}),],
+            #                                 style={'font-size': 40}
+            # ),
+            html.Div(["User: ", dcc.Dropdown(data.get_users_available(), '', multi=True,id="input-user"),],
                                             style={'font-size': 40}
             ),
             html.Div(["Customer: ", dcc.Dropdown(data.get_customers_available(), '', multi=True,id="input-customer"),],
@@ -65,10 +63,11 @@ app.layout = html.Div(
               Input("input-date", "start_date"),
               Input("input-date", "end_date"),
             #   Input(component_id="input-month", component_property='value'),
-              Input(component_id="input-customer", component_property='value'))
+              Input(component_id="input-customer", component_property='value'),
+              Input(component_id="input-user", component_property='value')
+            )
 
-def get_sunburst(start_date,end_date, customer):
-    # set_values = get_set_posible_values()
+def get_sunburst(start_date,end_date, customer, user):
     # df_year = data[(data['Date'].dt.year == year) & (data['Date'].dt.month_name() == month)]
     # df_year = data[data['Date'].dt.year == year]
     # # df_year = data
@@ -82,10 +81,11 @@ def get_sunburst(start_date,end_date, customer):
 
     if customer not in ["", []]:
         data_output = filter_by_customer(data_output, customer)
-        # this should be different when len(customer) > 1 ->
-        return px.sunburst(data_output, path=['Project', 'Activity'], values='Duration', title=f'{start_date} - {end_date}')
 
-    return px.sunburst(data_output, path=['Customer', 'Project', 'Activity'], values='Duration', title=f'{start_date} - {end_date}')
+    if user not in ["", []]:
+        data_output = filter_by_user(data_output, user)
+
+    return px.sunburst(data_output, path=['Customer', 'Project', 'Activity', 'Ticket'], values='Duration', title=f'{start_date} - {end_date}')
     # fig = px.sunburst(data_output, path=['Customer', 'Project', 'Activity'], values='Duration', title=str(years))
     # return fig
 
